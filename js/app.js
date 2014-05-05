@@ -1,5 +1,4 @@
 var clientID = 'c6558cafa162f2e';
-var clientSecret = '4c8d92cb2f73698cfffe9a6fbaf840e9a5ad2b57';
 
 var imgurUrl = 'https://api.imgur.com/3/';
 
