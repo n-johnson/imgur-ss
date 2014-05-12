@@ -25,7 +25,6 @@ var App = {};
 
 App.loadSlideshow = function(albumID, delay) {
 	this.duration = delay;
-	App.timer = new CircularTimer(this.duration);
 	Imgur.call('album/' + albumID + '/images', function(resp) {
 		var data = resp.data;
 		for (var cur in data) {
@@ -38,6 +37,7 @@ App.loadSlideshow = function(albumID, delay) {
 		});
 		$('#setup').css('display', 'none');
 	});
+	App.timer = new CircularTimer(this.duration);
 };
 
 App.resetTimer = function() {
@@ -65,34 +65,42 @@ var Timer = function(func, timerLength) {
 	this.func = func;
 	this.timerLength = timerLength;
 	this.remaining = parseInt(timerLength, 10);
-	this.start(func, 1000);
+	this.start(func);
 };
 
-Timer.prototype.start = function(func, timerLength) {
+Timer.prototype.start = function(func) {
 	var that = this;
+	that.savedFunc = func;
+	console.log('starting');
 	this.handler = setInterval(function() {
 		that.remaining--;
 		if (that.remaining === 0) {
 			return clearInterval(that.handler);
 		}
 		return func(that.remaining);
-	}, timerLength);
+	}, 1000);
+};
+
+Timer.prototype.restart = function(func) {
+	clearInterval(this.handler);
+	this.start(this.savedFunc);
 };
 
 Timer.prototype.reset = function() {
 	this.remaining = this.timerLength;
+	this.restart(this.savedFunc);
 };
 
 var CircularTimer = function(timerLength) {
 	this.timerLength = timerLength;
-	this.createTimer(this.timerLength);
+	this.createTimer();
 };
 
 CircularTimer.prototype.createTimer = function() {
 	var that = this;
 	this.timer = new Timer(function(remaining) {
 		var completetion = (that.timerLength - remaining) / that.timerLength;
-		console.log(completetion + ' percent done.');
+		updateCanvas(completetion);
 		$("#timer-data").html(remaining);
 	}, that.timerLength);
 };
@@ -100,3 +108,4 @@ CircularTimer.prototype.createTimer = function() {
 CircularTimer.prototype.reset = function() {
 	return this.timer.reset();
 };
+

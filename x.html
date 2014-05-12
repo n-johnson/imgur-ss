@@ -1,0 +1,128 @@
+<html>
+<style>
+body {
+    background: cadetblue;
+}
+.progress circle {
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset .3s linear;
+    stroke-width: 1em;
+    stroke: rgba(255, 255, 255, .6);
+}
+
+.progress text {
+    fill:rgba(255, 255, 255, .6);   
+}
+
+</style>
+
+<div id="test"></div>
+
+<script>
+var Arc = function(svgID, circID, options, padding) {
+    this.svg = document.getElementById(svgID);
+    this.circ = document.getElementById(circID);
+    this.options = options || {};
+    this.padding = padding || 10;
+    this.percentComplete = 0;
+    this.setup();
+};
+
+Arc.prototype.setup = function() {
+    var width = this.svg.getAttribute('width'),
+        height = this.svg.getAttribute('height');
+    var r = Math.min(width, height) / 2 - this.padding;
+    if (typeof this.circ.getAttribute('r') === 'undefined' || this.circ.getAttribute('r') == null) {
+        this.circ.setAttribute('r', r);
+    } else {
+        r = this.circ.getAttribute('r');
+    }
+    this.circ.setAttribute('cy', height / 2);
+    this.circ.setAttribute('cx', width / 2);
+
+    for (var key in this.options) {
+        this.circ.setAttribute(key, this.options[key])
+    }
+
+    var c = 2 * Math.PI * r,
+        offset = c * ((100 - this.percentComplete) / 100);
+
+    this.circ.setAttribute('stroke-dasharray', c);
+    this.circ.style['stroke-dashoffset'] = offset;
+}
+
+Arc.prototype.update = function(percentComplete) {
+    var r = this.circ.getAttribute('r');
+    	c = 2 * Math.PI * r,
+    offset = c * ((100 - percentComplete) / 100);
+    this.circ.style['stroke-dashoffset'] = offset;
+};
+
+var Something = function(parentID, width, height) {
+    this.parentID = parentID;
+    this.width = width;
+    this.height = height;
+    this._add('SomethingSVG', 'SomethingCircle', 'SomethingText');
+    this.arc = new Arc('SomethingSVG', 'SomethingCircle', {
+        'fill': 'transparent'
+    });
+};
+
+Something.prototype._add = function(svgID, circleID, textID) {
+    var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute('id', svgID);
+        svg.setAttribute('class', 'progress');
+        svg.setAttribute('width', this.width);
+        svg.setAttribute('height', this.height);
+    var circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute('id', circleID);
+    var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute('id', textID);
+        text.setAttribute('x', 100);
+        text.setAttribute('y', 130);
+        text.setAttribute('font-size', 100);
+        text.style["text-anchor"] =  "middle";
+        text.textContent = '0';
+
+    var parentElement = document.getElementById(this.parentID);    
+    svg.appendChild(circle);
+    svg.appendChild(text);
+
+    parentElement.appendChild(svg);
+};
+
+Something.prototype.update = function(percentComplete) {
+    return this.arc.update(percentComplete);
+};
+
+Something.prototype.updateText = function(newText) {
+    var text = document.getElementById('SomethingText');
+    text.textContent = newText;
+};
+
+Something.prototype.startCountdown = function(seconds, updateDelay) {
+    updateDelay = updateDelay || 1000;
+    var that = this;
+    var startTime = Date.now(),
+        stopTime = startTime + (seconds * 1000);
+
+    this.countdownHandler = setInterval(function() {
+        var elapsed = (Date.now() - startTime) / 1000;
+        var remaining = seconds - elapsed;
+        if(remaining < 0)
+            remaining = 0;
+        var percent = (elapsed / seconds) * 100;
+        if (percent > 100)
+            percent = 100;
+        that.update(percent);
+        that.updateText(Math.ceil(remaining));
+        if (Date.now() >= stopTime)
+            return clearInterval(that.countdownHandler);
+    }, updateDelay);
+};
+
+var ttt = new Something('test',200,200);
+ttt.startCountdown(10,100);
+</script>
+
+</html>

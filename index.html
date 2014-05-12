@@ -28,10 +28,10 @@
             <button type="submit" id="ssLoader">Load slideshow!</button>
             <button type="submit" id="default">Load Default Slideshow!</button>
         </div>
-        <div class="timer">
-            <div id="timer-data">
-            </div>
-        </div>
+        <svg id="timer" width="200" height="200" style="position:absolute">
+            <text id="timer-data"></text>
+            <circle id="circle" fill="none" stroke="#CCC" stroke-width="15">
+        </svg>
         <div class="slides-container">
         </div>
     </div>
@@ -42,9 +42,19 @@
     <script src="/js/app.js"></script>
     <script src="/js/jquery.superslides.min.js"></script>
     <script>
-    App.load();
+    var app = App.load();
     </script>
+    <script>
+    var a = document.getElementById("arc");
 
+    function updateCanvas(percent, arc) {
+        console.log('Drop as a percent: ' + percent);
+        var daArc = calcArcInfo(percent);
+        arc.setAttribute("d", daArc);
+    }
+
+
+    </script>
 </body>
 
 </html>
